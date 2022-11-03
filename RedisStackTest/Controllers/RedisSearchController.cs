@@ -44,16 +44,26 @@ namespace RedisStackTest.Controllers
         public IList<RedisArt> Get([FromRoute] string Title)
         {
             _provider.Connection.CreateIndex(typeof(RedisArt));
-            if (_redis.Any(a =>  a.Title.Contains(Title) ))
+
+            List<RedisArt> tresult = new List<RedisArt>();
+            foreach (var item in _redis)
             {
-                var result = _redis.Where(a => a.Title == Title).ToList();
-                return result;
+                if (item.Title.ToLower().Contains(Title.ToLower()))
+                {
+                    tresult.Add(item);
+                }
+            }
+
+            if (tresult.Count != 0)
+            {
+
+                return tresult;
             }
             else
             {
                 RedisArt redisArt = new RedisArt();
                 redisArt.Title = Title;
-                string strsql = " select [ArtID],[ArtContent],[CreateTime],[UpdateTime],[Title],[UserId],[VisibleStatus],[ClicksNumber],(select count(*) from [ArtLike] L where L.[ArtID] = A.[ArtID]) as LikeClicks from [Art] A Where Title = @Title";
+                string strsql = " select [ArtID],[ArtContent],[CreateTime],[UpdateTime],[Title],[UserId],[VisibleStatus],[ClicksNumber],(select count(*) from [ArtLike] L where L.[ArtID] = A.[ArtID]) as LikeClicks from [Art] A Where Title like '%'+@Title+'%'";
                 var result = _dapperUtil.DapperQuery(strsql, redisArt).ToList();
                 foreach (var item in result)
                 {
@@ -61,49 +71,37 @@ namespace RedisStackTest.Controllers
                 }
                 return result;
             }
-            
+
+            //var result = _redis.Where(a => a.Title.Contains(Title)).ToList();
+            //if (_redis.Any(a => a.Title.Contains(Title)))
+            //{
+
+            //    var redisresult = _redis.Where(a => a.Title.Contains(Title)).OrderBy(a => a.Title).ToList();
+            //    return redisresult;
+            //}
+            //else
+            //{
+            //    RedisArt redisArt = new RedisArt();
+            //    redisArt.Title = Title;
+            //    string strsql = " select [ArtID],[ArtContent],[CreateTime],[UpdateTime],[Title],[UserId],[VisibleStatus],[ClicksNumber],(select count(*) from [ArtLike] L where L.[ArtID] = A.[ArtID]) as LikeClicks from [Art] A Where Title like '%'+@Title+'%'";
+            //    var dbresult = _dapperUtil.DapperQuery(strsql, redisArt).ToList();
+            //    foreach (var item in dbresult)
+            //    {
+            //        _redis.Insert(item, TimeSpan.FromMinutes(10));
+            //    }
+            //    return dbresult;
+            //}
+
 
 
         }
         [HttpGet("FullText/{FullText}")]
-        public IList<RedisArt> GetFull([FromRoute] string FullText)
+        public IList<Art> GetFull([FromRoute] string FullText)
         {
-            _provider.Connection.CreateIndex(typeof(RedisArt));
-            if (_redis.Any(a => a.ArtContent.Contains(FullText) || a.Title.Contains(FullText) || a.UserId.Contains(FullText)))
-            {
-
-                var result = _redis.Where(a => a.ArtContent.Contains(FullText)
-                                            || a.Title.Contains(FullText)
-                                            || a.UserId.Contains(FullText) ).ToList();
-                return result;
-            }
-            else
-            {
-                var resultdb = (from a in _DbContext.Arts
-                                where a.Title.Contains(FullText)
-                                    || a.ArtContent.Contains(FullText)
-                                    || a.UserId.Contains(FullText)
-                               select a).ToList();
-                
-                var resultredis = new List<RedisArt>();
-                foreach (var dbitem in resultdb)
-                {
-
-                    foreach (var redisitem in resultredis)
-                    {
-                        
-                        redisitem.ArtContent = dbitem.ArtContent;
-                        redisitem.Title = dbitem.Title;
-                        redisitem.UserId = dbitem.UserId;
-                        redisitem.ArtId = dbitem.ArtId;
-                        redisitem.CreateTime = dbitem.CreateTime;
-                        redisitem.ClicksNumber = dbitem.ClicksNumber;
-                        resultredis.Add(redisitem);
-                        _redis.Insert(redisitem, TimeSpan.FromMinutes(10));
-                    }
-                }
-                return resultredis;
-            }
+            var result = _DbContext.Arts.Where(a => a.Title.Contains(FullText) ||
+                                                  a.ArtContent.Contains(FullText) ||
+                                                  a.UserId.Contains(FullText)).ToList();
+            return result;
 
         }
         // POST api/<ValuesController>
@@ -114,22 +112,31 @@ namespace RedisStackTest.Controllers
             //  art.CreateTimeStamp = time.TotalSeconds;
             art.CreateTime = DateTime.Now;
             art.VisibleStatus = 1;
-            art.InsertData = 1;
+            art.DataMethod = 1;
             await _redis.InsertAsync(art, TimeSpan.FromMinutes(10));
             return art;
         }
 
         // PUT api/<ValuesController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut]
+        public async Task Put([FromBody] RedisArt art)
         {
+
+            art.CreateTime = DateTime.Now;
+            art.VisibleStatus = 1;
+            art.DataMethod = 2;
+
+            await _redis.InsertAsync(art, TimeSpan.FromMinutes(10));
         }
 
         // DELETE api/<ValuesController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete]
+        public async Task Delete([FromBody] RedisArt art)
         {
-            
+            art.CreateTime = DateTime.Now;
+            art.DataMethod = 3;
+
+            await _redis.InsertAsync(art, TimeSpan.FromMinutes(10));
         }
     }
 }

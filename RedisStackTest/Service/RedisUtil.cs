@@ -15,18 +15,20 @@ namespace RedisStackTest.Service
     {
         private readonly RedisConnectionProvider _provider;
         private readonly CatchToDB _catchToDB;
+        private readonly RedisCollection<RedisArt> _redis;
         public RedisUtil(RedisConnectionProvider provider,CatchToDB catchToDB)
         {
             _provider = provider;
             _catchToDB = catchToDB;
+            _redis = (RedisCollection<RedisArt>)provider.RedisCollection<RedisArt>();
         }
 
         //public override async Task StartAsync(CancellationToken cancellationToken)
         //{
         //    await _provider.Connection.DropIndexAsync(typeof(RedisArt));
-        //
+
         //}
-        //
+
         //public override Task StopAsync(CancellationToken cancellationToken)
         //{
         //    return Task.CompletedTask;

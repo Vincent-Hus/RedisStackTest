@@ -19,20 +19,40 @@ namespace RedisStackTest.Service
         }
         public async Task ArtCatchToDB()
         {
-            var Insertitem = new List<RedisArt>();
-            
-            if (!_redis.Any(a => a.InsertData == 1))
+            if (_redis.Any(a => a.DataMethod == 1 ))
             {
-                return;
+
+                var Insertitem = new List<RedisArt>();
+                Insertitem = _redis.Where(a => a.DataMethod == 1).ToList();
+                string strinsert = @" Insert into [Art] ([Title],[ArtContent],[CreateTime],[UserID]) values (@Title , @ArtContent, @CreateTime,@UserID ) ";
+                await _dapperUtil.DapperExecuteAsync(strinsert, Insertitem);
+                await MultiDelete(_redis, Insertitem);
             }
-            Insertitem = _redis.Where(a => a.InsertData == 1).ToList();
-            string strinsert = @" Insert into [Art] ([Title],[ArtContent],[CreateTime],[UserID]) values (@Title , @ArtContent, @CreateTime,@UserID ) ";
-            await _dapperUtil.DapperExecuteAsync(strinsert, Insertitem);
-            foreach (var item in Insertitem)
+            if (_redis.Any(a =>  a.DataMethod == 2 ))
             {
-                await _redis.DeleteAsync(item);
+                var updateitem = new List<RedisArt>();
+                updateitem = _redis.Where(a => a.DataMethod == 2).ToList();
+                string strupdate = @" Update [Art] set [Title] = @Title ,[ArtContent] = @ArtContent ,[UpdateTime] = @UpdateTime Where ArtID = @ArtID";
+                await _dapperUtil.DapperExecuteAsync(strupdate, updateitem);
+                await MultiDelete(_redis, updateitem);
             }
-            
+            if (_redis.Any(a => a.DataMethod == 3))
+            {
+                var deleteitem = new List<RedisArt>();
+                deleteitem = _redis.Where(a => a.DataMethod == 3).ToList();
+                string strdelete = @" delete [Art] Where ArtID = @ArtID";
+                await _dapperUtil.DapperExecuteAsync(strdelete, deleteitem);
+                await MultiDelete(_redis, deleteitem);
+            }
+
+        }
+
+        private async Task MultiDelete<T>(RedisCollection<T> param ,IList<T> data)
+        {
+            foreach (var item in data)
+            {
+                await param.DeleteAsync(item);
+            }
         }
     }
 }

@@ -26,7 +26,7 @@ namespace RedisStackTest.Models
         [RedisIdField] public int ArtId { get; set; }
 
         [Searchable(Sortable = true, Weight = 3)] public string ArtContent { get; set; }
-        [Indexed] public DateTime CreateTime { get; set; }
+        [Indexed(Sortable = true)] public DateTime CreateTime { get; set; }
 
         [Indexed] public DateTime? UpdateTime { get; set; }
         [Searchable(Sortable =true,Weight =2)] public string Title { get; set; }
@@ -34,7 +34,7 @@ namespace RedisStackTest.Models
         [Indexed] public byte VisibleStatus { get; set; }
          public int ClicksNumber { get; set; }
         [Indexed] public int LikeClicks { get; set; }
-        [Indexed] public int InsertData { get; set; }
+        [Indexed] public int DataMethod { get; set; }
         //[Indexed(Sortable =true)] public double CreateTimeStamp {
         //    get
         //    {
