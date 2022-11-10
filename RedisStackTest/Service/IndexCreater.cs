@@ -2,7 +2,6 @@
 using Redis.OM;
 using Redis.OM.Searching;
 using RedisStackTest.Models;
-using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,29 +10,30 @@ using System.Threading.Tasks;
 
 namespace RedisStackTest.Service
 {
-    public class RedisUtil
+    public class IndexCreater: IHostedService
     {
         private readonly RedisConnectionProvider _provider;
         private readonly CatchToDB _catchToDB;
         private readonly RedisCollection<RedisArt> _redis;
-        public RedisUtil(RedisConnectionProvider provider,CatchToDB catchToDB)
+        public IndexCreater(RedisConnectionProvider provider, CatchToDB catchToDB)
         {
             _provider = provider;
             _catchToDB = catchToDB;
             _redis = (RedisCollection<RedisArt>)provider.RedisCollection<RedisArt>();
         }
-
-        public async Task BulkInsert<T>(IList<T> items)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var tasks = new List<Task>();
-            foreach (var item in items)
+            using (var conn = _provider.Connection)
             {
-                tasks.Add(_provider.Connection.SetAsync(item, TimeSpan.FromMinutes(10)));
+                await conn.CreateIndexAsync(typeof(RedisArt));
             }
 
-            await Task.WhenAll(tasks);
+
         }
 
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
-
 }

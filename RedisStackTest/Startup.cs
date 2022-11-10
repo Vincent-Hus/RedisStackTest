@@ -33,9 +33,10 @@ namespace RedisStackTest
             services.AddControllers();
             services.AddDbContext<NorthwindContext>(a => a.UseSqlServer(Configuration.GetConnectionString("conn")));
             services.AddSingleton(new RedisConnectionProvider(Configuration.GetConnectionString("redis")));
-            services.AddSingleton<RedisTool>();
+            services.AddSingleton<RedisUtil>();
             services.AddSingleton<DapperUtil>();
-            services.AddHostedService<RedisUtil>();
+            services.AddHostedService<IndexCreater>();
+            services.AddHostedService<RedisScript>();
             services.AddSingleton<CatchToDB>();
         }
 

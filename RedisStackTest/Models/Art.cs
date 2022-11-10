@@ -23,7 +23,7 @@ namespace RedisStackTest.Models
     public class RedisArt
     {
        
-        [RedisIdField] public int ArtId { get; set; }
+        [RedisIdField] [Indexed(Sortable = true)] public int ArtId { get; set; }
 
         [Searchable(Sortable = true, Weight = 3)] public string ArtContent { get; set; }
         [Indexed(Sortable = true)] public DateTime CreateTime { get; set; }

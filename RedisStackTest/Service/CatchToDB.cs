@@ -21,7 +21,7 @@ namespace RedisStackTest.Service
         {
             if (_redis.Any(a => a.DataMethod == 1 ))
             {
-
+                
                 var Insertitem = new List<RedisArt>();
                 Insertitem = _redis.Where(a => a.DataMethod == 1).ToList();
                 string strinsert = @" Insert into [Art] ([Title],[ArtContent],[CreateTime],[UserID]) values (@Title , @ArtContent, @CreateTime,@UserID ) ";

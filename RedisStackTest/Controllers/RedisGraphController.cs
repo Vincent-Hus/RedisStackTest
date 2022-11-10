@@ -18,12 +18,10 @@ namespace RedisStackTest.Controllers
     {
         private readonly NorthwindContext _DbContext;
         private readonly RedisConnectionProvider _provider;
-        private readonly RedisCollection<Art> _redis; //不能做為建構式參數
         public RedisGraphController(NorthwindContext context, RedisConnectionProvider provider,RedisTool redis2)
         {
             _DbContext = context;
             _provider = provider;
-            _redis = (RedisCollection<Art>)provider.RedisCollection<Art>();
         }
         // GET: api/<RedisGraphController>
         [HttpGet]
@@ -41,11 +39,16 @@ namespace RedisStackTest.Controllers
 
         // POST api/<RedisGraphController>
         [HttpPost]
-        public async void Post()
+        public async Task<RedisReply>  Post()
         {
-            //_provider.Connection.Execute("GRAPH.QUERY ArtComment CREATE(:Art { title: '" + art.Title + "', content:'" + art.ArtContent + "' , id: " + art.ArtId.ToString() + " })");
-            
-            RedisReply tt = await _provider.Connection.ExecuteAsync("Bf.ADD","bftest","123");
+            using (_provider.Connection)
+            {
+
+                RedisReply tt = await _provider.Connection.ExecuteAsync("Bf.ADD", "bftest", "123");
+                RedisReply tt2 = await _provider.Connection.ExecuteAsync("Bf.MEXISTS", "bftest", "123");
+
+                return tt2;
+            }
             
         }
 
